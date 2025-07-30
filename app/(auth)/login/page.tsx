@@ -50,7 +50,7 @@ export default function Page() {
     formAction(formData);
   };
 
-  const socialProviderButtons = [<GoogleAuthButton label="Sign in with Google" />];
+  const socialProviderButtons = [<GoogleAuthButton key="google" label="Sign in with Google" />];
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
