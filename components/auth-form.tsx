@@ -5,17 +5,20 @@ import { Label } from './ui/label';
 
 export function AuthForm({
   action,
+  socialProviderButtons,
   children,
   defaultEmail = '',
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
+  socialProviderButtons: React.ReactNode[];
   children: React.ReactNode;
   defaultEmail?: string;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
+      {...socialProviderButtons}
       <div className="flex flex-col gap-2">
         <Label
           htmlFor="email"

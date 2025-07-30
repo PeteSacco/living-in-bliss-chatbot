@@ -222,6 +222,9 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    // Handle any other errors
+    console.error('Chat API error:', error);
+    return new ChatSDKError('bad_request:api', 'An unexpected error occurred').toResponse();
   }
 }
 
