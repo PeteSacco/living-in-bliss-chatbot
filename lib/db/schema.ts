@@ -9,7 +9,9 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  vector,
 } from 'drizzle-orm/pg-core';
+import { objectsInStorage } from './migrations/schema';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -124,6 +126,41 @@ export const document = pgTable(
 );
 
 export type Document = InferSelectModel<typeof document>;
+
+export const knowledgeBase = pgTable(
+  'KnowledgeBase',
+  {
+    id: uuid('id').notNull().defaultRandom(),
+    title: text('title').notNull(),
+    storageObjectId: uuid('storageObjectId').notNull().references(() => objectsInStorage.id),
+    createdAt: timestamp('createdAt').notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+  }),
+);
+
+export type KnowledgeBase = InferSelectModel<typeof knowledgeBase>;
+
+export const knowledgeBaseChunk = pgTable(
+  'KnowledgeBaseChunk',
+  {
+    id: uuid('id').notNull().defaultRandom(),
+    knowledgeBaseId: uuid('knowledgeBaseId').notNull(),
+    content: text('content').notNull(),
+    embedding: vector('embedding', { dimensions: 384 }),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+    documentRef: foreignKey({
+      columns: [table.knowledgeBaseId],
+      foreignColumns: [knowledgeBase.id],
+    }),
+  }),
+);
+
+export type KnowledgeBaseChunk = InferSelectModel<typeof knowledgeBaseChunk>;
 
 export const suggestion = pgTable(
   'Suggestion',
