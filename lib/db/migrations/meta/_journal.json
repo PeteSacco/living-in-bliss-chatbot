@@ -57,6 +57,13 @@
       "when": 1754070413983,
       "tag": "0007_romantic_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1754072925695,
+      "tag": "0008_noisy_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }
