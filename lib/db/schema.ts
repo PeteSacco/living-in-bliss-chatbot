@@ -11,7 +11,6 @@ import {
   boolean,
   vector,
 } from 'drizzle-orm/pg-core';
-import { objectsInStorage } from './migrations/schema';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -132,7 +131,6 @@ export const knowledgeBase = pgTable(
   {
     id: uuid('id').notNull().defaultRandom(),
     title: text('title').notNull(),
-    storageObjectId: uuid('storageObjectId').notNull().references(() => objectsInStorage.id),
     createdAt: timestamp('createdAt').notNull(),
   },
   (table) => ({
