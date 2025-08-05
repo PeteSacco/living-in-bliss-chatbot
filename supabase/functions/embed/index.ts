@@ -1,7 +1,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 // <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.42.5';
+import { createClient } from '@supabase/supabase-js';
 
 const model = new Supabase.ai.Session('gte-small');
 
