@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { processMarkdown } from '../_lib/markdown-parser.ts';
+import { processMarkdown } from './markdown-parser.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
