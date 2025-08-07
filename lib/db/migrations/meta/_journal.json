@@ -78,6 +78,20 @@
       "when": 1754416422383,
       "tag": "0010_calm_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1754525384324,
+      "tag": "0011_misty_jane_foster",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1754526828874,
+      "tag": "0012_mysterious_alex_power",
+      "breakpoints": true
     }
   ]
 }

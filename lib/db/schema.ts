@@ -22,7 +22,7 @@ export type User = InferSelectModel<typeof user>;
 
 export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  createdAt: timestamp('createdAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
   title: text('title').notNull(),
   userId: uuid('userId')
     .notNull()
@@ -43,7 +43,7 @@ export const messageDeprecated = pgTable('Message', {
     .references(() => chat.id),
   role: varchar('role').notNull(),
   content: json('content').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
 export type MessageDeprecated = InferSelectModel<typeof messageDeprecated>;
@@ -56,7 +56,7 @@ export const message = pgTable('Message_v2', {
   role: varchar('role').notNull(),
   parts: json('parts').notNull(),
   attachments: json('attachments').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
 
 export type DBMessage = InferSelectModel<typeof message>;
@@ -107,7 +107,7 @@ export const document = pgTable(
   'Document',
   {
     id: uuid('id').notNull().defaultRandom(),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
@@ -131,7 +131,7 @@ export const knowledgeBase = pgTable(
   {
     id: uuid('id').notNull().defaultRandom(),
     title: text('title').notNull(),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
@@ -147,7 +147,7 @@ export const knowledgeBaseChunk = pgTable(
     knowledgeBaseId: uuid('knowledgeBaseId').notNull(),
     content: text('content').notNull(),
     embedding: vector('embedding', { dimensions: 384 }),
-    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    createdAt: timestamp('createdAt').notNull().defaultNow().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
@@ -173,7 +173,7 @@ export const suggestion = pgTable(
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
@@ -191,7 +191,7 @@ export const stream = pgTable(
   {
     id: uuid('id').notNull().defaultRandom(),
     chatId: uuid('chatId').notNull(),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
