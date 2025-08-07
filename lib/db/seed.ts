@@ -1,6 +1,11 @@
+import { config } from 'dotenv';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+
+config({
+  path: '.env.local',
+});
 
 // biome-ignore lint: Forbidden non-null assertion.
 const SUPABASE_URL = process.env.SUPABASE_URL!;

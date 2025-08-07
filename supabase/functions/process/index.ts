@@ -66,9 +66,8 @@ Deno.serve(async (req) => {
       continue;
     } 
 
-    const { data: knowledgeBaseId, error: upsertError } = await supabase.from('KnowledgeBase').upsert({
+    const { data: knowledgeBase, error: upsertError } = await supabase.from('KnowledgeBase').upsert({
       title,
-      content,
     }).select().single();
 
     if (upsertError) {
@@ -82,7 +81,7 @@ Deno.serve(async (req) => {
 
     const { error: insertError } = await supabase.from('KnowledgeBaseChunk').insert(
       processedMd.sections.map(({ content }) => ({
-        knowledgeBaseId,
+        knowledgeBaseId: knowledgeBase.id,
         content,
       })),
     );
