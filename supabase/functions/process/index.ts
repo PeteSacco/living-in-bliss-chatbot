@@ -59,8 +59,9 @@ Deno.serve(async (req) => {
       .select('id, KnowledgeBaseChunk(id)')
       .eq('title', title)
       .maybeSingle();
-
-    const hasChunks = data?.KnowledgeBaseChunk?.length > 0;
+    
+    const chunks = data?.KnowledgeBaseChunk?.length;
+    const hasChunks = chunks && chunks > 0;
     if (data && hasChunks) {
       console.log(`⚠️ Document '${title}' already exists. Skipping.`);
       continue;
