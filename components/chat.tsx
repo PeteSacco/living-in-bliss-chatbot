@@ -4,6 +4,7 @@ import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { usePipeline } from '@/hooks/use-pipeline';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
@@ -49,6 +50,12 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+
+  // Initialize embedding pipeline for knowledge search
+  const generateEmbedding = usePipeline(
+    'feature-extraction',
+    'Supabase/gte-small',
+  );
 
   const {
     messages,

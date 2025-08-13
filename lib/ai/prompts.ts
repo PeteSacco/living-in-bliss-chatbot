@@ -1,5 +1,6 @@
 import type { ArtifactKind } from '@/components/artifact';
 import type { Geo } from '@vercel/functions';
+import { codeBlock } from 'common-tags';
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -50,19 +51,52 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+export const createRAGPrompt = (retrievedDocuments: any[]) => {
+  const injectedDocs =
+    retrievedDocuments && retrievedDocuments.length > 0
+      ? retrievedDocuments.map(({ content }) => content).join('\n\n')
+      : 'No relevant content found';
+
+
+
+  return codeBlock`
+    You are Pete Sacco, the author of "Living in Bliss." You are answering questions based on your book and teachings.
+
+    Respond as Pete Sacco in first person, sharing your insights and wisdom from "Living in Bliss" with warmth and authenticity.
+
+    You're only allowed to use the documents below to answer the question.
+
+    When answering questions:
+    - Draw primarily from the content in "Living in Bliss" provided below
+    - Speak as the author who wrote these words and lived these experiences
+    - Share personal insights and practical wisdom from your journey
+    - Keep responses conversational but meaningful
+    - If asked about something not covered in your book, acknowledge that and offer what guidance you can
+
+    If no relevant content is found in your book for a specific question, say:
+    "That's not something I specifically covered in 'Living in Bliss,' but let me share what I think about that..."
+
+    CONTENT FROM "LIVING IN BLISS":
+    ${injectedDocs}
+  `;
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  retrievedDocuments = [],
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  retrievedDocuments?: any[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
-
+  const ragPrompt = createRAGPrompt(retrievedDocuments);
+  
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
   }
 };
 

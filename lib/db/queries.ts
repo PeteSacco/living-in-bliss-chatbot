@@ -27,6 +27,7 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  knowledgeBaseChunk,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -53,14 +54,20 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function createUser(email: string, password: string | null = null) {
+export async function createUser(
+  email: string,
+  password: string | null = null,
+) {
   let hashedPassword = null;
   if (password) {
     hashedPassword = generateHashedPassword(password);
   }
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword }).returning();
+    return await db
+      .insert(user)
+      .values({ email, password: hashedPassword })
+      .returning();
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
   }
@@ -536,6 +543,42 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+export function getDb() {
+  return db;
+}
+
+export async function getKnowledgeBaseChunks({
+  knowledgeBaseId,
+}: {
+  knowledgeBaseId: string;
+}) {
+  try {
+    return await db
+      .select()
+      .from(knowledgeBaseChunk)
+      .where(eq(knowledgeBaseChunk.knowledgeBaseId, knowledgeBaseId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get knowledge base chunks',
+    );
+  }
+}
+
+export async function getKnowledgeBaseChunksWithoutEmbedding() {
+  try {
+    return await db
+      .select()
+      .from(knowledgeBaseChunk)
+      .where(isNull(knowledgeBaseChunk.embedding));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get knowledge base chunks',
     );
   }
 }

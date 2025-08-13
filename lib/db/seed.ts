@@ -27,12 +27,41 @@ async function seed() {
     };
   });
   // Process markdown documents to seed knowledge base and knowledge base chunks
-  const { data, error } = await supabase.functions.invoke('process', {
-    body: { documents },
-  });
+  const { data, error: processError } = await supabase.functions.invoke(
+    'process',
+    {
+      body: { documents },
+    },
+  );
 
-  if (error) {
-    console.error('❌ Error invoking function:', error);
+  const { data: knowledgeBaseChunks, error: knowledgeBaseChunkError } =
+    await supabase.from('KnowledgeBaseChunk').select('*').is('embedding', null);
+
+  console.log('🔍 Knowledge base chunks:', knowledgeBaseChunks);
+  if (knowledgeBaseChunkError) {
+    console.error(
+      '❌ Error getting knowledge base chunks:',
+      knowledgeBaseChunkError,
+    );
+  }
+
+  for (const chunk of knowledgeBaseChunks) {
+    const { error: embedError } = await
+      await supabase.functions.invoke('embed', {
+        body: {
+          ids: [chunk.id],
+          table: 'KnowledgeBaseChunk',
+          contentColumn: 'content',
+          embeddingColumn: 'embedding',
+        },
+      });
+    if (embedError) {
+      console.error('❌ Error embedding chunk:', embedError);
+    }
+  }
+
+  if (processError) {
+    console.error('❌ Error invoking function:', embedError);
   } else {
     console.log('✅ Seeded documents:', data);
   }

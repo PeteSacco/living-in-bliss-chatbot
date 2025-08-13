@@ -1,15 +1,8 @@
-import {
-  convertToModelMessages,
-  createUIMessageStream,
-  JsonToSseTransformStream,
-  smoothStream,
-  stepCountIs,
-  streamText,
-} from 'ai';
+import { convertToModelMessages, streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
-  createStreamId,
   deleteChatById,
   getChatById,
   getMessageCountByUserId,
@@ -19,12 +12,7 @@ import {
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
-import { myProvider } from '@/lib/ai/providers';
+import { generateEmbedding, searchKnowledgeBase } from '@/lib/ai/embeddings';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -146,85 +134,67 @@ export async function POST(request: Request) {
       ],
     });
 
-    const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    // Generate embedding and search knowledge base for the user's message
+    let retrievedDocuments: any[] = [];
+    try {
+      // Extract text content from the user message
+      const userMessageText = message.parts
+        .filter((part) => part.type === 'text')
+        .map((part) => part.text)
+        .join(' ');
 
-    const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
 
-        result.consumeStream();
+      if (userMessageText.trim()) {
+        const embedding = await generateEmbedding(userMessageText);
+        retrievedDocuments = await searchKnowledgeBase(embedding, 0.8, 5);
+      }
+    } catch (error) {
+      console.error('Knowledge search error:', error);
+      // Continue without knowledge search if it fails
+    }
 
-        dataStream.merge(
-          result.toUIMessageStream({
-            sendReasoning: true,
-          }),
-        );
-      },
-      generateId: generateUUID,
-      onFinish: async ({ messages }) => {
+
+    // Use AI SDK v5 streamText with OpenAI
+    const result = streamText({
+      model: openai(
+        selectedChatModel === 'chat-model-reasoning' ? 'gpt-4o' : 'gpt-4o-mini',
+      ),
+      system: systemPrompt({
+        selectedChatModel,
+        requestHints,
+        retrievedDocuments,
+      }),
+      messages: convertToModelMessages(uiMessages),
+      maxTokens: 1024,
+      temperature: 0.7,
+      onFinish: async ({ text }) => {
+        // Save the assistant's response
         await saveMessages({
-          messages: messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            parts: message.parts,
-            createdAt: new Date(),
-            attachments: [],
-            chatId: id,
-          })),
+          messages: [
+            {
+              id: generateUUID(),
+              chatId: id,
+              role: 'assistant',
+              parts: [{ type: 'text', text }],
+              attachments: [],
+              createdAt: new Date(),
+            },
+          ],
         });
-      },
-      onError: () => {
-        return 'Oops, an error occurred!';
       },
     });
 
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () =>
-          stream.pipeThrough(new JsonToSseTransformStream()),
-        ),
-      );
-    } else {
-      return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
-    }
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
     // Handle any other errors
     console.error('Chat API error:', error);
-    return new ChatSDKError('bad_request:api', 'An unexpected error occurred').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'An unexpected error occurred',
+    ).toResponse();
   }
 }
 
