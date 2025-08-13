@@ -33,9 +33,6 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
-
 export interface RequestHints {
   latitude: Geo['latitude'];
   longitude: Geo['longitude'];
@@ -94,9 +91,9 @@ export const systemPrompt = ({
   const ragPrompt = createRAGPrompt(retrievedDocuments);
   
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
+    return `${requestPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
+    return `${requestPrompt}\n\n${artifactsPrompt}${ragPrompt ? `\n\n${ragPrompt}` : ''}`;
   }
 };
 
