@@ -51,7 +51,7 @@ export const searchKnowledgeBase = ({
           )
         `);
 
-        const relevantChunks = results.rows;
+        const relevantChunks = results;
 
         if (relevantChunks.length === 0) {
           return {
@@ -64,7 +64,7 @@ export const searchKnowledgeBase = ({
 
         // Stream the search results
         dataStream.write({
-          type: 'data-search-results',
+          type: 'data-searchResults',
           data: {
             query,
             results: relevantChunks.map((chunk: any) => ({

@@ -45,23 +45,27 @@ async function seed() {
     );
   }
 
+  if (!knowledgeBaseChunks) return;
+
   for (const chunk of knowledgeBaseChunks) {
-    const { error: embedError } = await
-      await supabase.functions.invoke('embed', {
+    const { error: embedError } = await supabase.functions.invoke(
+      'embed',
+      {
         body: {
           ids: [chunk.id],
           table: 'KnowledgeBaseChunk',
           contentColumn: 'content',
           embeddingColumn: 'embedding',
         },
-      });
+      },
+    );
     if (embedError) {
       console.error('❌ Error embedding chunk:', embedError);
     }
   }
 
   if (processError) {
-    console.error('❌ Error invoking function:', embedError);
+    console.error('❌ Error invoking function:', processError);
   } else {
     console.log('✅ Seeded documents:', data);
   }

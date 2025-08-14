@@ -37,6 +37,14 @@ export type CustomUIDataTypes = {
   codeDelta: string;
   suggestion: Suggestion;
   appendMessage: string;
+  searchResults: {
+    query: string;
+    results: Array<{
+      id: string;
+      content: string;
+      knowledgeBaseId: string;
+    }>;
+  };
   id: string;
   title: string;
   kind: ArtifactKind;

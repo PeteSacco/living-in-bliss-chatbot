@@ -10,6 +10,7 @@ import {
   gte,
   inArray,
   lt,
+  isNull,
   type SQL,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';

@@ -9,6 +9,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import { createUIMessageStream, JsonToSseTransformStream } from 'ai';
 import { differenceInSeconds } from 'date-fns';
+import { getStreamContext } from '../../route';
 
 export async function GET(
   _: Request,
@@ -17,7 +18,6 @@ export async function GET(
   const { id: chatId } = await params;
 
   const resumeRequestedAt = new Date();
-
 
   if (!chatId) {
     return new ChatSDKError('bad_request:api').toResponse();
@@ -61,7 +61,9 @@ export async function GET(
     execute: () => {},
   });
 
-  const stream = await streamContext.resumableStream(recentStreamId, () =>
+  const streamContext = getStreamContext();
+
+  const stream = await streamContext?.resumableStream(recentStreamId, () =>
     emptyDataStream.pipeThrough(new JsonToSseTransformStream()),
   );
 

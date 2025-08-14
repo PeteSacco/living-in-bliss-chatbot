@@ -30,7 +30,7 @@ self.onmessage = async (event: MessageEvent<PipelineWorkerMessage>) => {
   const { type, task, model, text, options } = event.data;
 
   try {
-    if (type === 'load') {
+    if (type === 'load' && task) {
       // Load the pipeline
       pipelineInstance = await pipeline(task, model);
 

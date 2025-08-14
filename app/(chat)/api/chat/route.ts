@@ -153,7 +153,6 @@ export async function POST(request: Request) {
       // Continue without knowledge search if it fails
     }
 
-
     // Use AI SDK v5 streamText with OpenAI
     const result = streamText({
       model: openai(
@@ -165,7 +164,7 @@ export async function POST(request: Request) {
         retrievedDocuments,
       }),
       messages: convertToModelMessages(uiMessages),
-      maxTokens: 1024,
+      maxOutputTokens: 1024,
       temperature: 0.7,
       onFinish: async ({ text }) => {
         // Save the assistant's response
