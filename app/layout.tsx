@@ -12,25 +12,6 @@ export const metadata: Metadata = {
   ),
   title: 'Living in Bliss Chatbot',
   description: 'Chat with Pete Sacco, author of Living in Bliss',
-  openGraph: {
-    title: 'Living in Bliss Chatbot',
-    description: 'Chat with Pete Sacco, author of Living in Bliss',
-    type: 'website',
-    images: [
-      {
-        url: '/images/app-preview.png',
-        width: 2674,
-        height: 1216,
-        alt: 'Living in Bliss Chatbot - Chat with Pete Sacco',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Living in Bliss Chatbot',
-    description: 'Chat with Pete Sacco, author of Living in Bliss',
-    images: ['/images/app-preview.png'],
-  },
 };
 
 export const viewport = {
